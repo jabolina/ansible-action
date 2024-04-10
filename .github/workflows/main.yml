@@ -20,7 +20,7 @@ jobs:
         run: ansible-galaxy collection install -r roles/ec2-requirements.yml
 
       - name: Create EC2 instances
-        run: ansible-playbook -i , aws-ec2.yml -e operation=create -e region=sa-east-1
+        run: ansible-playbook -vvv -i , aws-ec2.yml -e operation=create -e region=sa-east-1
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -29,13 +29,13 @@ jobs:
         run: ls -1 *_sa-east-1_inventory.yaml | xargs -L1 -I{} cp {} benchmark_inventory.yaml
 
       - name: Start the Hyperfoil controller
-        run: ansible-playbook -i benchmark_inventory.yaml hyperfoil_controller.yml
+        run: ansible-playbook -vvv -i benchmark_inventory.yaml hyperfoil_controller.yml
 
       - name: Started controller
         run: echo "Started"
 
       - name: Destroy EC2 instances
-        run: ansible-playbook -i benchmark_inventory.yaml aws-ec2.yml -e operation=delete -e region=sa-east-1
+        run: ansible-playbook -vvv -i benchmark_inventory.yaml aws-ec2.yml -e operation=delete -e region=sa-east-1
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
