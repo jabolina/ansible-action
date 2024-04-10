@@ -7,7 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANSIBLE_HOST_KEY_CHECKING: False
-      TESTING_VARIABLE: ${{ secrets.SAMPLE_SECRET }}
     steps:
       - name: Show Ansible information
         run: ansible-playbook --version
@@ -19,3 +18,24 @@ jobs:
 
       - name: Install AWS collection from Galaxy
         run: ansible-galaxy collection install -r roles/ec2-requirements.yml
+
+      - name: Create EC2 instances
+        run: ansible-playbook -i , aws-ec2.yml -e operation=create -e region=sa-east-1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Set inventory file name
+        run: ls -1 *_sa-east-1_inventory.yaml | xargs -L1 -I{} cp {} benchmark_inventory.yaml
+
+      - name: Start the Hyperfoil controller
+        run: ansible-playbook -i benchmark_inventory.yaml hyperfoil_controller.yml
+
+      - name: Started controller
+        run: echo "Started"
+
+      - name: Destroy EC2 instances
+        run: ansible-playbook -i benchmark_inventory.yaml aws-ec2.yml -e operation=delete -e region=sa-east-1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
