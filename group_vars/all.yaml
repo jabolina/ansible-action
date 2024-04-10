@@ -1,0 +1,4 @@
+# User that is configured on the Infinispan Server
+user: benchmark
+# Password of the user configured on the Infinispan Server
+pass: benchmark

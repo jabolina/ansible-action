@@ -1,0 +1,21 @@
+- name: Print hyperfoil_controller_host
+  debug:
+    msg: "Controller is {{ hyperfoil_controller_host | default(ansible_hostname) }}"
+
+- name: "Initializing hyperfoil controller requirements"
+  ansible.builtin.include_tasks: init.yml
+  when: operation is undefined or operation is search("init")
+
+- ansible.builtin.include_tasks: run.yml
+  when: operation is undefined or operation is search("run")
+
+- name: "Retrieve stats"
+  ansible.builtin.include_tasks: retrieve_stats.yml
+  when: operation is defined and operation is search("stats")
+
+- ansible.builtin.include_tasks: shutdown.yml
+  when: operation is defined and operation is search("shutdown")
+
+- name: "Download Hyperfoil controller logs"
+  ansible.builtin.include_tasks: download_logs.yml
+  when: operation is defined and operation is search("download_logs")

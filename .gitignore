@@ -1,0 +1,6 @@
+ansible.cfg
+inventory.ini
+*inventory.yaml
+*.log
+*.pem
+.idea

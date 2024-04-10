@@ -1,0 +1,22 @@
+all:
+  vars:
+    ansible_ssh_private_key_file: benchmark_jbolina_sa-east-1.pem
+    hyperfoil_controller_host: ec2-18-230-154-172.sa-east-1.compute.amazonaws.com
+server:
+   vars:
+     ansible_user: admin
+   hosts:
+     ec2-18-229-158-151.sa-east-1.compute.amazonaws.com:
+     ec2-52-67-36-98.sa-east-1.compute.amazonaws.com:
+     ec2-18-231-50-17.sa-east-1.compute.amazonaws.com:
+hyperfoil_agent:
+   vars:
+     ansible_user: ec2-user
+   hosts:
+     ec2-54-207-170-102.sa-east-1.compute.amazonaws.com:
+     ec2-15-228-226-236.sa-east-1.compute.amazonaws.com:
+hyperfoil_controller:
+  vars:
+    ansible_user: ec2-user
+  hosts:
+    ec2-18-230-154-172.sa-east-1.compute.amazonaws.com:

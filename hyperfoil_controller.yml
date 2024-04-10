@@ -1,0 +1,2 @@
+- hosts: "{{ hyperfoil_controller_host | default('hyperfoil_controller') }}"
+  roles: [ hyperfoil_controller ]

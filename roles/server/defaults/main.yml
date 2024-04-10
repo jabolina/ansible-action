@@ -1,0 +1,20 @@
+# Name of the cache to install use on the Infinispan Server
+cache_name: benchmark
+# Location of the cache configuration to use for the named cache
+cache_file: files/cache.xml
+# Optional way to override the server image used by the benchmar
+server_image: quay.io/infinispan/server
+# Java VM arguments passed to the server image when running
+server_java_args: "{{ undef() }}"
+# Allows for automatic generation of Java Flight Recorder and download
+# This will append to the server_java_args if provided
+capture_jfr: false
+# Location of a server configuration file that will be templated and applied
+# to the starting server. By default TCPPING will be populated.
+# Mutually exclusive with require_authentication
+server_configuration_file: "infinispan.xml.j2"
+# When using the default configuration template will allow disabling authentication.
+require_authentication: "true"
+# Location of where Infinispan Server benchmark related files will be created
+# Normally this is not needed to be changed
+server_tmp_dir: /tmp/infinispan-benchmark

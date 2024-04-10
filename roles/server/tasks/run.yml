@@ -1,0 +1,61 @@
+    - name: Enable JFR
+      set_fact:
+        # TODO: change this to allow overriding in case if java_options is defined as inventory
+        java_options: "{{ '-XX:StartFlightRecording:filename=' + server_tmp_dir + '/jfr/server-' + inventory_hostname + '.jfr' }}"
+      when: capture_jfr is defined and capture_jfr
+
+    - name: Create JFR directory
+      ansible.builtin.file:
+        path: "{{ server_tmp_dir }}/jfr"
+        state: directory
+        # Have to make global writeable for the user that Infinispan Server creates
+        mode: '0777'
+
+    - name: Apply server_java_args
+      set_fact:
+        java_options: "{{ java_options + server_java_args if java_options is defined else server_java_args }}"
+      when: server_java_args is defined
+
+    - name: Template Infinispan Server Configuration file
+      ansible.builtin.template:
+        src: "{{ server_configuration_file }}"
+        dest: "{{ server_tmp_dir }}/infinispan.xml"
+      when: server_configuration_file is defined
+
+    - name: Start Infinispan container
+      containers.podman.podman_container:
+        name: infinispan-server
+        image: "{{ server_image }}"
+        recreate: true
+        state: started
+        net: host
+        env:
+          USER: "{{ user }}"
+          PASS: "{{ pass }}"
+            #Not needed with net host as this is required for jgroups
+            #ports:
+            #- 11222:11222
+          JAVA_OPTIONS: "{{ java_options | default('') }}"
+        volume:
+          - "{{ server_tmp_dir }}:{{ server_tmp_dir }}"
+        command:
+          - "{{ '-c ' + server_tmp_dir + '/' + 'infinispan.xml' | basename if server_configuration_file is defined else '' }}"
+
+    - name: Wait until server is up or print log
+      block:
+        - name: Retrieve logs
+          ansible.builtin.command: "{{ 'podman container logs --since=' + ansible_date_time.iso8601 + ' infinispan-server' }}"
+          register: container_log
+          retries: 12
+          delay: 5
+          until: container_log.stdout_lines | select('search', 'started in') | list | length > 0
+      rescue:
+      - name: Print container log
+        ansible.builtin.fail:
+          msg: "{{ container_log.stdout_lines }}"
+
+    - name: Print contents of cache_file
+      ansible.builtin.debug:
+        msg: "the value of {{ cache_file }} is {{ lookup('ansible.builtin.file', cache_file) }}"
+      run_once: true
+
