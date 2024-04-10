@@ -11,6 +11,8 @@ jobs:
       - name: Show Ansible information
         run: ansible-playbook --version
 
+      - uses: actions/checkout@v4
+
       - name: Install Hyperfoil roles from Galaxy
         run: ansible-galaxy role install -r roles/requirements.yml
 
