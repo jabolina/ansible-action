@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANSIBLE_HOST_KEY_CHECKING: False
+      TESTING_VARIABLE: ${{ secrets.SAMPLE_SECRET }}
     steps:
       - name: Show Ansible information
         run: ansible-playbook --version
