@@ -1,0 +1,12 @@
+name: Run Ansible in GitHub Action
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: False
+    steps:
+      - name: Deploy via ansible
+        run: ansible-playbook --version
