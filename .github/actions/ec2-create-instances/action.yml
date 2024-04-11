@@ -12,7 +12,9 @@ runs:
     - id: aws-ec2-requirements-install
       name: Install the required Ansible AWS collections.
       shell: bash
-      run: ./aws_ec2.sh requirements
+      run: |
+        ./aws_ec2.sh requirements
+        pipx inject ansible-core boto3 botocore
 
     - id: create-ec2-instances
       shell: bash

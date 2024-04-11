@@ -30,7 +30,7 @@
       - proto: -1
         group_name: "{{ cluster_name }}"
   register: group
-  no_log: "false"
+  no_log: "{{ no_log_sensitive }}"
 
 - name: Create Key
   amazon.aws.ec2_key:
