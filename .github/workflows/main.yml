@@ -8,6 +8,11 @@ on:
         type: string
         default: 'sa-east-1'
 
+      inventory_name:
+        description: 'Name to save the Ansible inventory file'
+        type: string
+        default: 'benchmark-file.yaml'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,14 +35,12 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Set inventory file name
-        id: get_inventory_name
-        run: ls -1 *_inventory.yaml >> echo >> $GITHUB_OUTPUT
+        run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
 
       - name: Start the Hyperfoil controller
-        id: start_hyperfoil_controller
         uses: ./.github/actions/hyperfoil-create-controller
         with:
-          inventory: ${{ steps.get_inventory_name.outputs.out }}
+          inventory: ${{ inputs.inventory_name }}
 
       - name: Started controller
         run: echo "Started"
