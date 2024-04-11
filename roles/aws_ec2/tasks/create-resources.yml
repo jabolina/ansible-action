@@ -27,7 +27,7 @@
         to_port: 11222
         cidr_ip: '{{ cidr_ip }}'
       # Open all inbound from same security group
-      - proto: -1
+      - proto: all
         group_name: "{{ cluster_name }}"
   register: group
   no_log: "{{ no_log_sensitive }}"
