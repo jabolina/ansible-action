@@ -15,7 +15,7 @@ case $OPERATION in
   ;;
   create|delete|start|stop)
     if [ -f "env.yml" ]; then ANSIBLE_CUSTOM_VARS_ARG="-e @env.yml"; fi
-    ansible-playbook aws_ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:3}"
+    ansible-playbook aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:3}"
   ;;
   *)
     echo "Invalid option!"
