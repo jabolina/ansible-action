@@ -1,6 +1,12 @@
 name: Run Ansible in GitHub Action
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'Name of the region where EC2 instances should be installed'
+        type: string
+        default: 'sa-east-1'
 
 jobs:
   build:
