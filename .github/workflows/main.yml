@@ -31,7 +31,7 @@ jobs:
 
       - name: Set inventory file name
         id: get_inventory_name
-        run: ls -1 *_inventory.yaml >> $GITHUB_OUTPUT
+        run: ls -1 *_inventory.yaml >> echo >> $GITHUB_OUTPUT
 
       - name: Start the Hyperfoil controller
         id: start_hyperfoil_controller
