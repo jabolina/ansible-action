@@ -11,31 +11,36 @@ jobs:
       - name: Show Ansible information
         run: ansible-playbook --version
 
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Install Hyperfoil roles from Galaxy
-        run: ansible-galaxy role install -r roles/requirements.yml
-
-      - name: Install AWS collection from Galaxy
-        run: ansible-galaxy collection install -r roles/ec2-requirements.yml
-
-      - name: Create EC2 instances
-        run: ansible-playbook -vvv -i , aws-ec2.yml -e operation=create -e region=sa-east-1
+      - name: Create AWS EC2 instances
+        id: create_aws_ec2_instances
+        uses: ./.github/actions/ec2-create-instances
+        with:
+          region: ${{ inputs.region }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Set inventory file name
-        run: ls -1 *_sa-east-1_inventory.yaml | xargs -L1 -I{} cp {} benchmark_inventory.yaml
+        id: get_inventory_name
+        run: ls -1 *_inventory.yaml >> $GITHUB_OUTPUT
 
       - name: Start the Hyperfoil controller
-        run: ansible-playbook -vvv -i benchmark_inventory.yaml hyperfoil_controller.yml
+        id: start_hyperfoil_controller
+        uses: ./.github/actions/hyperfoil-create-controller
+        with:
+          inventory: ${{ steps.get_inventory_name.outputs.out }}
 
       - name: Started controller
         run: echo "Started"
 
-      - name: Destroy EC2 instances
-        run: ansible-playbook -vvv -i benchmark_inventory.yaml aws-ec2.yml -e operation=delete -e region=sa-east-1
+      - name: Delete EC2 instances
+        if: ${{ always() && steps.create_aws_ec2_instances.conclusion != 'skipped' }}
+        uses: ./.github/actions/ec2-delete-instances
+        with:
+          region: ${{ inputs.region }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

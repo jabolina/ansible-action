@@ -1,0 +1,19 @@
+name: Create EC2 instances
+description: Creates EC2 instances
+
+inputs:
+  inventory:
+    description: 'The Ansible inventory file to use.'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - id: hyperfoil-requirements-install
+      name: Install the required Ansible Hyperfoil roles.
+      shell: bash
+      run: ./hyperfoil.sh requirements
+
+    - id: create-hyperfoil-controller
+      shell: bash
+      run: ./hyperfoil.sh create -i ${{ inputs.inventory }}
