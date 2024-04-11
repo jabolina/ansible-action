@@ -16,4 +16,6 @@ runs:
 
     - id: create-hyperfoil-controller
       shell: bash
-      run: ./hyperfoil.sh create -i ${{ inputs.inventory }}
+      run: |
+        ./hyperfoil.sh init -i ${{ inputs.inventory }}
+        ./hyperfoil.sh run -i ${{ inputs.inventory }}
