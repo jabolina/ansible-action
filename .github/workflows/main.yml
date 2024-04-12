@@ -48,6 +48,9 @@ jobs:
       - name: Inspect inventory
         run: cat ${{ inputs.inventory_name }}
 
+      - name: Get runner IP
+        run: curl -ks --ipv4 https://ifconfig.me
+
       - name: Cache Ansible files
         id: cache-primes
         uses: actions/cache@v4
@@ -78,6 +81,9 @@ jobs:
 
       - name: Inspect files
         run: ls -la
+
+      - name: Get runner IP
+        run: curl -ks --ipv4 https://ifconfig.me
 
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
         uses: ./.github/actions/infinispan-create-instances
