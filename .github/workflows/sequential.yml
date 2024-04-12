@@ -1,4 +1,4 @@
-name: Run Ansible in GitHub Action
+name: Run Ansible in GitHub Action Sequentially
 
 on:
   workflow_dispatch:
@@ -67,22 +67,11 @@ jobs:
         with:
           inventory: ${{ inputs.inventory_name }}
 
-      - name: Download Ansible files
-        id: cache-primes
-        uses: actions/cache@v4
-        with:
-          key: ansible-information-${{ github.run_id }}
-          restore-keys: ansible-information-${{ github.run_id }}
-          path: |
-            ${{ inputs.inventory_name }}
-            benchmark_runner_${{ inputs.region }}.pem
-          fail-on-cache-miss: true
-
       - name: Running benchmark ${{ inputs.benchmark_name }}
         run: echo "Started benchmark"
 
       - name: Delete EC2 instances
-        if: ${{ always() && steps.provision.conclusion != 'skipped' }}
+        if: ${{ always() && steps.create_aws_ec2_instances.conclusion != 'skipped' }}
         uses: ./.github/actions/ec2-delete-instances
         with:
           region: ${{ inputs.region }}
