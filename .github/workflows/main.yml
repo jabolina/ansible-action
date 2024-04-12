@@ -52,7 +52,7 @@ jobs:
           path: |
             ${{ inputs.inventory_name }}
             benchmark_runner_${{ inputs.region }}.pem
-          key: ansible-information
+          key: ansible-information-${{ github.run_id }}
 
   infinispan-prepare:
     needs:
@@ -66,8 +66,11 @@ jobs:
         id: cache-primes
         uses: actions/cache@v4
         with:
-          restore-keys: ansible-information
-          path: .
+          key: ansible-information-${{ github.run_id }}
+          restore-keys: ansible-information-
+          path: |
+            ${{ inputs.inventory_name }}
+            benchmark_runner_${{ inputs.region }}.pem
           fail-on-cache-miss: true
 
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
@@ -94,7 +97,9 @@ jobs:
         uses: actions/cache@v4
         with:
           restore-keys: ansible-information
-          path: .
+          path: |
+            ${{ inputs.inventory_name }}
+            benchmark_runner_${{ inputs.region }}.pem
           fail-on-cache-miss: true
 
       - name: Start the Hyperfoil controller
@@ -116,7 +121,9 @@ jobs:
         uses: actions/cache@v4
         with:
           restore-keys: ansible-information
-          path: .
+          path: |
+            ${{ inputs.inventory_name }}
+            benchmark_runner_${{ inputs.region }}.pem
           fail-on-cache-miss: true
 
       - name: Running benchmark ${{ inputs.benchmark_name }}
@@ -135,7 +142,9 @@ jobs:
         uses: actions/cache@v4
         with:
           restore-keys: ansible-information
-          path: .
+          path: |
+            ${{ inputs.inventory_name }}
+            benchmark_runner_${{ inputs.region }}.pem
           fail-on-cache-miss: true
 
       - name: Delete EC2 instances
