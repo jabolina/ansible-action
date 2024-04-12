@@ -45,6 +45,9 @@ jobs:
       - name: Set inventory file name
         run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
 
+      - name: Inspect inventory
+        run: cat ${{ inputs.inventory_name }}
+
       - name: Cache Ansible files
         id: cache-primes
         uses: actions/cache@v4
@@ -72,6 +75,9 @@ jobs:
             ${{ inputs.inventory_name }}
             benchmark_runner_${{ inputs.region }}.pem
           fail-on-cache-miss: true
+
+      - name: Inspect files
+        run: ls -la
 
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
         uses: ./.github/actions/infinispan-create-instances
