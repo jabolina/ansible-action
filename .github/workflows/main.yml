@@ -18,6 +18,11 @@ on:
         type: string
         default: 'quay.io/infinispan/server'
 
+      benchmark_name:
+        description: 'Benchmark name to run'
+        type: string
+        default: 'hotrod-benchmark'
+
 env:
   ANSIBLE_HOST_KEY_CHECKING: False
 
@@ -41,6 +46,8 @@ jobs:
         run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
 
   infinispan-prepare:
+    needs:
+      - provision
     runs-on: ubuntu-latest
     steps:
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
@@ -55,6 +62,8 @@ jobs:
           inventory: ${{ inputs.inventory_name }}
 
   hyperfoil-prepare:
+    needs:
+      - provision
     runs-on: ubuntu-latest
     steps:
       - name: Start the Hyperfoil controller
@@ -62,10 +71,18 @@ jobs:
         with:
           inventory: ${{ inputs.inventory_name }}
 
-      - name: Started controller
-        run: echo "Started"
+  benchmark:
+    needs:
+      - infinispan-prepare
+      - hyperfoil-prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Running benchmark ${{ inputs.benchmark_name }}
+        run: echo "Started benchmark"
 
   teardown:
+    needs:
+      - benchmark
     runs-on: ubuntu-latest
     steps:
       - name: Delete EC2 instances
