@@ -28,8 +28,6 @@ env:
 
 jobs:
   provision:
-    outputs:
-      runner: ${{ steps.pin_runner_name.outputs.runner }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -56,14 +54,10 @@ jobs:
             benchmark_runner_${{ inputs.region }}.pem
           key: ansible-information-${{ github.run_id }}
 
-      - name: Pin runner
-        id: pin_runner_name
-        run: echo "runner=${{ runner.name }}" >> "$GITHUB_OUTPUT"
-
   infinispan-prepare:
     needs:
       - provision
-    runs-on: ${{ needs.provision.outputs.runner }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -79,12 +73,6 @@ jobs:
             benchmark_runner_${{ inputs.region }}.pem
           fail-on-cache-miss: true
 
-      - name: Inspect files
-        run: ls -la
-
-      - name: Get runner IP
-        run: curl -ks --ipv4 https://ifconfig.me
-
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
         uses: ./.github/actions/infinispan-create-instances
         with:
@@ -99,7 +87,7 @@ jobs:
   hyperfoil-prepare:
     needs:
       - provision
-    runs-on: ${{ needs.provision.outputs.runner }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -122,10 +110,9 @@ jobs:
 
   benchmark:
     needs:
-      - provision
       - infinispan-prepare
       - hyperfoil-prepare
-    runs-on: ${{ needs.provision.outputs.runner }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -146,9 +133,8 @@ jobs:
 
   teardown:
     needs:
-      - provision
       - benchmark
-    runs-on: ${{ needs.provision.outputs.runner }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
