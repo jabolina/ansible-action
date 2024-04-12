@@ -1,5 +1,5 @@
-name: Create EC2 instances
-description: Creates EC2 instances
+name: Create Hyperfoil controller instance
+description: Install dependencies and start Hyperfoil controller instance.
 
 inputs:
   inventory:

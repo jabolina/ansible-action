@@ -1,0 +1,15 @@
+name: Create Infinispan server instances
+description: Creates Infinispan server instances
+
+inputs:
+  inventory:
+    description: 'The Ansible inventory file to use.'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - id: infinispan-create-cache
+      name: Create cache in Infinispan
+      shell: bash
+      run: ./server.sh create_cache -i ${{ inputs.inventory }}

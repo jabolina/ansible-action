@@ -13,15 +13,18 @@ on:
         type: string
         default: 'benchmark-file.yaml'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      ANSIBLE_HOST_KEY_CHECKING: False
-    steps:
-      - name: Show Ansible information
-        run: ansible-playbook --version
+      infinispan_image:
+        description: 'Infinispan server image to utilize'
+        type: string
+        default: 'quay.io/infinispan/server'
 
+env:
+  ANSIBLE_HOST_KEY_CHECKING: False
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -37,6 +40,23 @@ jobs:
       - name: Set inventory file name
         run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
 
+  infinispan-prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
+        uses: ./.github/actions/infinispan-create-instances
+        with:
+          inventory: ${{ inputs.inventory_name }}
+          image: ${{ inputs.infinispan_image }}
+
+      - name: Create cache for benchmark
+        uses: ./.github/actions/infinispan-create-cache
+        with:
+          inventory: ${{ inputs.inventory_name }}
+
+  hyperfoil-prepare:
+    runs-on: ubuntu-latest
+    steps:
       - name: Start the Hyperfoil controller
         uses: ./.github/actions/hyperfoil-create-controller
         with:
@@ -45,6 +65,9 @@ jobs:
       - name: Started controller
         run: echo "Started"
 
+  teardown:
+    runs-on: ubuntu-latest
+    steps:
       - name: Delete EC2 instances
         if: ${{ always() && steps.create_aws_ec2_instances.conclusion != 'skipped' }}
         uses: ./.github/actions/ec2-delete-instances

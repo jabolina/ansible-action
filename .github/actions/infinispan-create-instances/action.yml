@@ -1,0 +1,24 @@
+name: Create Infinispan server instances
+description: Creates Infinispan server instances
+
+inputs:
+  inventory:
+    description: 'The Ansible inventory file to use.'
+    required: true
+
+  image:
+    description: 'Infinispan server image to use.'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - id: init-infinispan-server
+      name: Install dependencies for Infinispan server.
+      shell: bash
+      run: ./server.sh init -i ${{ inputs.inventory }}
+
+    - id: run-infinispan-server
+      name: Run Infinispan server instances.
+      shell: bash
+      run: ./server.sh run -i ${{ inputs.inventory }} -e server_image=${{ inputs.image }}
