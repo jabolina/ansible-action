@@ -1,0 +1,92 @@
+name: Run Ansible in GitHub Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'Name of the region where EC2 instances should be installed'
+        type: string
+        default: 'sa-east-1'
+
+      inventory_name:
+        description: 'Name to save the Ansible inventory file'
+        type: string
+        default: 'benchmark-file.yaml'
+
+      infinispan_image:
+        description: 'Infinispan server image to utilize'
+        type: string
+        default: 'quay.io/infinispan/server'
+
+      benchmark_name:
+        description: 'Benchmark name to run'
+        type: string
+        default: 'hotrod-benchmark'
+
+env:
+  ANSIBLE_HOST_KEY_CHECKING: False
+
+jobs:
+  sequential:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create AWS EC2 instances
+        id: create_aws_ec2_instances
+        uses: ./.github/actions/ec2-create-instances
+        with:
+          region: ${{ inputs.region }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Set inventory file name
+        run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
+
+      - name: Inspect inventory
+        run: cat ${{ inputs.inventory_name }}
+
+      - name: Inspect files
+        run: ls -la
+
+      - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
+        uses: ./.github/actions/infinispan-create-instances
+        with:
+          inventory: ${{ inputs.inventory_name }}
+          image: ${{ inputs.infinispan_image }}
+
+      - name: Create cache for benchmark
+        uses: ./.github/actions/infinispan-create-cache
+        with:
+          inventory: ${{ inputs.inventory_name }}
+
+      - name: Start the Hyperfoil controller
+        uses: ./.github/actions/hyperfoil-create-controller
+        with:
+          inventory: ${{ inputs.inventory_name }}
+
+      - name: Download Ansible files
+        id: cache-primes
+        uses: actions/cache@v4
+        with:
+          key: ansible-information-${{ github.run_id }}
+          restore-keys: ansible-information-${{ github.run_id }}
+          path: |
+            ${{ inputs.inventory_name }}
+            benchmark_runner_${{ inputs.region }}.pem
+          fail-on-cache-miss: true
+
+      - name: Running benchmark ${{ inputs.benchmark_name }}
+        run: echo "Started benchmark"
+
+      - name: Delete EC2 instances
+        if: ${{ always() && steps.provision.conclusion != 'skipped' }}
+        uses: ./.github/actions/ec2-delete-instances
+        with:
+          region: ${{ inputs.region }}
+          inventory: ${{ inputs.inventory_name }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
