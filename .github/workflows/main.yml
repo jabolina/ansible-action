@@ -45,6 +45,15 @@ jobs:
       - name: Set inventory file name
         run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
 
+      - name: Cache Ansible files
+        id: cache-primes
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ inputs.inventory_name }}
+            benchmark_runner_${{ inputs.region }}.pem
+          key: ansible-information
+
   infinispan-prepare:
     needs:
       - provision
@@ -52,6 +61,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download Ansible files
+        id: cache-primes
+        uses: actions/cache@v4
+        with:
+          restore-keys: ansible-information
+          path: .
+          fail-on-cache-miss: true
+
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
         uses: ./.github/actions/infinispan-create-instances
         with:
@@ -71,6 +89,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download Ansible files
+        id: cache-primes
+        uses: actions/cache@v4
+        with:
+          restore-keys: ansible-information
+          path: .
+          fail-on-cache-miss: true
+
       - name: Start the Hyperfoil controller
         uses: ./.github/actions/hyperfoil-create-controller
         with:
@@ -85,6 +111,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download Ansible files
+        id: cache-primes
+        uses: actions/cache@v4
+        with:
+          restore-keys: ansible-information
+          path: .
+          fail-on-cache-miss: true
+
       - name: Running benchmark ${{ inputs.benchmark_name }}
         run: echo "Started benchmark"
 
@@ -96,8 +130,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download Ansible files
+        id: cache-primes
+        uses: actions/cache@v4
+        with:
+          restore-keys: ansible-information
+          path: .
+          fail-on-cache-miss: true
+
       - name: Delete EC2 instances
-        if: ${{ always() && steps.create_aws_ec2_instances.conclusion != 'skipped' }}
+        if: ${{ always() && steps.provision.conclusion != 'skipped' }}
         uses: ./.github/actions/ec2-delete-instances
         with:
           region: ${{ inputs.region }}
