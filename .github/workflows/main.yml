@@ -28,6 +28,8 @@ env:
 
 jobs:
   provision:
+    outputs:
+      runner: ${{ steps.pin_runner_name.outputs.runner }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -45,12 +47,6 @@ jobs:
       - name: Set inventory file name
         run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
 
-      - name: Inspect inventory
-        run: cat ${{ inputs.inventory_name }}
-
-      - name: Get runner IP
-        run: curl -ks --ipv4 https://ifconfig.me
-
       - name: Cache Ansible files
         id: cache-primes
         uses: actions/cache@v4
@@ -60,10 +56,14 @@ jobs:
             benchmark_runner_${{ inputs.region }}.pem
           key: ansible-information-${{ github.run_id }}
 
+      - name: Pin runner
+        id: pin_runner_name
+        run: echo "runner=${{ runner.name }}" >> "$GITHUB_OUTPUT"
+
   infinispan-prepare:
     needs:
       - provision
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.provision.outputs.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -99,7 +99,7 @@ jobs:
   hyperfoil-prepare:
     needs:
       - provision
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.provision.outputs.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -122,9 +122,10 @@ jobs:
 
   benchmark:
     needs:
+      - provision
       - infinispan-prepare
       - hyperfoil-prepare
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.provision.outputs.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -145,8 +146,9 @@ jobs:
 
   teardown:
     needs:
+      - provision
       - benchmark
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.provision.outputs.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
