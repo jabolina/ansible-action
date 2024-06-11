@@ -66,7 +66,7 @@ jobs:
         with:
           inventory: ${{ inputs.inventory_name }}
           definition: ${{ inputs.benchmark_plan }}
-          controller_args: ${{ inputs.hyperfoil_agent_args }}
+          hyperfoil_agent_args: ${{ inputs.hyperfoil_agent_args }}
 
       - name: Download all the results
         uses: ./.github/actions/benchmark-reports

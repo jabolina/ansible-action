@@ -10,6 +10,11 @@ inputs:
     description: 'Infinispan server image to use.'
     required: true
 
+  server_args:
+    description: 'Java arguments for the Infinispan server.'
+    required: false
+    default: ''
+
 runs:
   using: composite
   steps:
@@ -21,4 +26,9 @@ runs:
     - id: run-infinispan-server
       name: Run Infinispan server instances.
       shell: bash
-      run: ./server.sh run -i ${{ inputs.inventory }} -e server_image=${{ inputs.image }}
+      run: |
+        until ./server.sh run -i ${{ inputs.inventory }} -e server_image=${{ inputs.image }} -e server_java_args=${{ inputs.server_args }}
+        do
+          echo "Retrying to start Infinispan instances..."
+          sleep 1
+        done
