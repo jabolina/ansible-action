@@ -9,7 +9,7 @@ inputs:
   arguments:
     description: 'Additional arguments provided.'
     required: false
-    default: ''
+    default: ';'
 
 runs:
   using: composite
