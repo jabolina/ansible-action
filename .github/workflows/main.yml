@@ -28,6 +28,11 @@ on:
         type: string
         default: '-Xms128m -Xmx800m -XX:+UseZGC -XX:+ZGenerational'
 
+      aws_instances_args:
+        description: 'Arguments to provide to Ansible when provisioning the instances'
+        type: string
+        default: ''
+
 env:
   ANSIBLE_HOST_KEY_CHECKING: False
 
