@@ -21,13 +21,13 @@ runs:
     - id: init-infinispan-server
       name: Install dependencies for Infinispan server.
       shell: bash
-      run: ./server.sh init -i ${{ inputs.inventory }}
+      run: ./bin/server.sh init -i ../${{ inputs.inventory }}
 
     - id: run-infinispan-server
       name: Run Infinispan server instances.
       shell: bash
       run: |
-        until ./server.sh run -i ${{ inputs.inventory }} -e server_image=${{ inputs.image }} -e server_java_args=${{ inputs.server_args }}
+        until ./bin/server.sh run -i ../${{ inputs.inventory }} -e server_image=${{ inputs.image }} -e server_java_args=${{ inputs.server_args }}
         do
           echo "Retrying to start Infinispan instances..."
           sleep 1

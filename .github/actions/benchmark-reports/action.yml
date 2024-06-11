@@ -21,7 +21,7 @@ runs:
     - id: benchmark-run-all
       name: Run the benchmark plan
       shell: bash
-      run: ./benchmark.sh report ${{ inputs.definition }} ${{ inputs.report_folder }} -i ${{ inputs.inventory }} -e download_results=true
+      run: ./bin/benchmark.sh report ${{ inputs.definition }} ${{ inputs.report_folder }} -i ../${{ inputs.inventory }} -e download_results=true
 
     - uses: actions/upload-artifact@v4
       id: upload-to-github

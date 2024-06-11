@@ -15,4 +15,4 @@ runs:
   steps:
     - id: delete-load-runners
       shell: bash
-      run: ./aws_ec2.sh delete ${{ inputs.region }} -i ${{ inputs.inventory }}
+      run: ./bin/aws_ec2.sh delete ${{ inputs.region }} -i ../${{ inputs.inventory }}

@@ -11,15 +11,15 @@ REGION=$2
 
 case $OPERATION in
   requirements)
-    ansible-galaxy collection install -r roles/ec2-requirements.yml
+    ansible-galaxy collection install -r ../roles/ec2-requirements.yml
     pip3 install --user boto3 botocore
   ;;
   create|delete|start|stop)
     if [ -f "env.yml" ]; then ANSIBLE_CUSTOM_VARS_ARG="-e @env.yml"; fi
     if [ "$#" -ge "3" ]; then
-    	ansible-playbook aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:3}"
+    	ansible-playbook ../aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:3}"
     else
-    	ansible-playbook aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG
+    	ansible-playbook ../aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG
     fi
   ;;
   *)

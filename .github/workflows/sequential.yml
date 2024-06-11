@@ -81,7 +81,17 @@ jobs:
           inventory: $INVENTORY_NAME
 
       - name: Running benchmark ${{ inputs.benchmark_name }}
-        run: echo "Started benchmark"
+        uses: ./.github/actions/hyperfoil-benchmark
+        with:
+          inventory: $INVENTORY_NAME
+          agent_java_args: ${{ inputs.hyperfoil_agent_args }}
+          benchmark_name: ${{ inputs.benchmark_name }}
+
+      - name: Download benchmark reports
+        uses: ./.github/actions/hyperfoil-report
+        with:
+          inventory: $INVENTORY_NAME
+          run_id: '0000'
 
       - name: Delete EC2 instances
         if: ${{ always() && steps.create_aws_ec2_instances.conclusion != 'skipped' }}

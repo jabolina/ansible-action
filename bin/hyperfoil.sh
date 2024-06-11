@@ -10,7 +10,7 @@ OPERATION=$1
 
 case $OPERATION in
   requirements)
-    ansible-galaxy role install -r roles/requirements.yml
+    ansible-galaxy role install -r ../roles/requirements.yml
   ;;
   init|run|stats|shutdown|download_logs)
     if [ -f "env.yml" ]; then ANSIBLE_CUSTOM_VARS_ARG="-e @env.yml"; fi
