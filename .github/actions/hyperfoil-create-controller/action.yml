@@ -12,10 +12,10 @@ runs:
     - id: hyperfoil-requirements-install
       name: Install the required Ansible Hyperfoil roles.
       shell: bash
-      run: ./bin/hyperfoil.sh requirements
+      run: ./hyperfoil.sh requirements
 
     - id: create-hyperfoil-controller
       shell: bash
       run: |
-        ./bin/hyperfoil.sh init -i ../${{ inputs.inventory }}
-        ./bin/hyperfoil.sh run -i ../${{ inputs.inventory }}
+        ./hyperfoil.sh init -i ${{ inputs.inventory }}
+        ./hyperfoil.sh run -i ${{ inputs.inventory }}

@@ -11,7 +11,7 @@ OPERATION=$1
 
 case $OPERATION in
   run)
-    ansible-playbook ../all_benchmarks.yml -v "${@:2}"
+    ansible-playbook all_benchmarks.yml -v "${@:2}"
   ;;
   report)
     size=$(jq '.benchmarks | length' "$2")

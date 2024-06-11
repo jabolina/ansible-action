@@ -16,4 +16,4 @@ runs:
     - id: infinispan-create-cache
       name: Create cache in Infinispan
       shell: bash
-      run: ./bin/server.sh create_cache -i ../${{ inputs.inventory }} -e cache_file=${{ inputs.cache_file }}
+      run: ./server.sh create_cache -i ${{ inputs.inventory }} -e cache_file=${{ inputs.cache_file }}
