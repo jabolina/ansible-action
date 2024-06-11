@@ -1,4 +1,4 @@
-name: Run Ansible in GitHub Action Sequentially
+name: Run all benchmarks
 
 on:
   workflow_dispatch:

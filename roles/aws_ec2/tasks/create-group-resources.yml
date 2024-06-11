@@ -23,7 +23,7 @@
           volume_size: "{{ vars[item + '_volume_size'] }}"
           delete_on_termination: true
   register: instance_info
-  no_log: "{{ no_log_sensitive }}"
+  no_log: False
 # Needed because register doesn't allow for dynamic variable name generation but set_fact does
 - name: Set instance information
   set_fact:
