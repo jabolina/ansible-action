@@ -60,25 +60,25 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Set inventory file name
-        run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ INVENTORY_NAME }}
+        run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} $INVENTORY_NAME
 
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
         uses: ./.github/actions/infinispan-create-instances
         with:
-          inventory: ${{ INVENTORY_NAME }}
+          inventory: $INVENTORY_NAME
           image: ${{ inputs.infinispan_image }}
           server_args: ${{ inputs.server_args }}
 
       - name: Create cache for benchmark
         uses: ./.github/actions/infinispan-create-cache
         with:
-          inventory: ${{ INVENTORY_NAME }}
+          inventory: $INVENTORY_NAME
           cache_file: files/${{ inputs.cache_file }}
 
       - name: Start the Hyperfoil controller
         uses: ./.github/actions/hyperfoil-create-controller
         with:
-          inventory: ${{ INVENTORY_NAME }}
+          inventory: $INVENTORY_NAME
 
       - name: Running benchmark ${{ inputs.benchmark_name }}
         run: echo "Started benchmark"
@@ -88,7 +88,7 @@ jobs:
         uses: ./.github/actions/ec2-delete-instances
         with:
           region: ${{ inputs.region }}
-          inventory: ${{ INVENTORY_NAME }}
+          inventory: $INVENTORY_NAME
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
