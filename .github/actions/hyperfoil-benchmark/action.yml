@@ -6,14 +6,14 @@ inputs:
     description: 'The Ansible inventory file to use.'
     required: true
 
-  definition:
-    description: 'The JSON file describing the benchmark plan.'
+  benchmark_name:
+    description: 'Benchmark to run'
     required: true
 
-  report_folder:
-    description: 'Folder to store the reports'
+  agent_java_args:
+    description: 'Java arguments for the Hyperfoil agent.'
     required: false
-    default: 'reports'
+    default: ''
 
 runs:
   using: composite
@@ -21,11 +21,13 @@ runs:
     - id: benchmark-run-all
       name: Run the benchmark plan
       shell: bash
-      run: ./bin/benchmark.sh report ${{ inputs.definition }} ${{ inputs.report_folder }} -i ${{ inputs.inventory }} -e download_results=true
+      run: ./bin/hyperfoil.sh benchmark -i ${{ inputs.inventory }} -e test_name=${{ inputs.benchmark_name }} -e agent_java_args="${{ inputs.agent_java_args }}"
 
     - uses: actions/upload-artifact@v4
       id: upload-to-github
       name: Upload ${{ inputs.report_folder }} to GitHub
       with:
-        name: ${{ inputs.report_folder }}
-        path: ${{ inputs.report_folder }}
+        name: report-${{ inputs.run_id }}
+        path: |
+          ${{ inputs.run_id }}_total.csv
+          ${{ inputs.run_id }}_all.json

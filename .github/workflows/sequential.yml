@@ -1,4 +1,4 @@
-name: Run Ansible in GitHub Action Sequentially
+name: Run a single benchmark
 
 on:
   workflow_dispatch:
@@ -8,10 +8,10 @@ on:
         type: string
         default: 'sa-east-1'
 
-      inventory_name:
-        description: 'Name to save the Ansible inventory file'
+      cache_file:
+        description: 'Cache XML configuration file'
         type: string
-        default: 'benchmark-file.yaml'
+        default: 'cache.xml'
 
       infinispan_image:
         description: 'Infinispan server image to utilize'
@@ -33,8 +33,14 @@ on:
         type: string
         default: ''
 
+      server_args:
+        description: 'Java arguments to provide the Infinispan server.'
+        type: string
+        default: ''
+
 env:
   ANSIBLE_HOST_KEY_CHECKING: False
+  INVENTORY_NAME: 'benchmark-file.yaml'
 
 jobs:
   sequential:
@@ -54,23 +60,25 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Set inventory file name
-        run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
+        run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ INVENTORY_NAME }}
 
       - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
         uses: ./.github/actions/infinispan-create-instances
         with:
-          inventory: ${{ inputs.inventory_name }}
+          inventory: ${{ INVENTORY_NAME }}
           image: ${{ inputs.infinispan_image }}
+          server_args: ${{ inputs.server_args }}
 
       - name: Create cache for benchmark
         uses: ./.github/actions/infinispan-create-cache
         with:
-          inventory: ${{ inputs.inventory_name }}
+          inventory: ${{ INVENTORY_NAME }}
+          cache_file: files/${{ inputs.cache_file }}
 
       - name: Start the Hyperfoil controller
         uses: ./.github/actions/hyperfoil-create-controller
         with:
-          inventory: ${{ inputs.inventory_name }}
+          inventory: ${{ INVENTORY_NAME }}
 
       - name: Running benchmark ${{ inputs.benchmark_name }}
         run: echo "Started benchmark"
@@ -80,7 +88,7 @@ jobs:
         uses: ./.github/actions/ec2-delete-instances
         with:
           region: ${{ inputs.region }}
-          inventory: ${{ inputs.inventory_name }}
+          inventory: ${{ INVENTORY_NAME }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

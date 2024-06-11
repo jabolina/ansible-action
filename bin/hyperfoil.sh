@@ -16,6 +16,10 @@ case $OPERATION in
     if [ -f "env.yml" ]; then ANSIBLE_CUSTOM_VARS_ARG="-e @env.yml"; fi
     ansible-playbook hyperfoil_controller.yml -v -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:2}"
   ;;
+  benchmark)
+    if [ -f "env.yml" ]; then ANSIBLE_CUSTOM_VARS_ARG="-e @env.yml"; fi
+    ansible-playbook hyperfoil_agent.yml -v $ANSIBLE_CUSTOM_VARS_ARG "${@:2}"
+  ;;
   *)
     echo "Invalid option!"
     echo "Available operations: requirements, init, run, shutdown, download_logs."
