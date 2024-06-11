@@ -16,7 +16,7 @@ runs:
     - id: benchmark-run-all
       name: Run the benchmark plan
       shell: bash
-      run: ./bin/hyperfoil.sh stats -i ${{ inputs.inventory }} -e test_runid=${{ inputs.run_id }} -e download_results=true
+      run: ./hyperfoil.sh stats -i ${{ inputs.inventory }} -e test_runid=${{ inputs.run_id }} -e download_results=true
 
     - uses: actions/upload-artifact@v4
       id: upload-to-github

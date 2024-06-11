@@ -21,4 +21,4 @@ runs:
     - id: benchmark-run-all
       name: Run the benchmark plan
       shell: bash
-      run: ./bin/benchmark.sh run -i ${{ inputs.inventory }} -e @${{ inputs.definition }} -e agent_java_args="${{ inputs.hyperfoil_agent_args }}"
+      run: ./benchmark.sh run -i ${{ inputs.inventory }} -e @${{ inputs.definition }} -e agent_java_args="${{ inputs.hyperfoil_agent_args }}"
