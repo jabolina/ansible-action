@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -ex
 cd $(dirname "${BASH_SOURCE[0]}")
 
 if [[ "$RUNNER_DEBUG" == "1" ]]; then
@@ -16,7 +16,11 @@ case $OPERATION in
   ;;
   create|delete|start|stop)
     if [ -f "env.yml" ]; then ANSIBLE_CUSTOM_VARS_ARG="-e @env.yml"; fi
-    ansible-playbook aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:3}"
+    if [ "$#" -ge "3" ]; then
+    	ansible-playbook aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:3}"
+    else
+    	ansible-playbook aws-ec2.yml -v -e "region=$REGION" -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG
+    fi
   ;;
   *)
     echo "Invalid option!"
