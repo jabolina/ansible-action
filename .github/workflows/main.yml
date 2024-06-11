@@ -1,4 +1,4 @@
-name: Run Ansible in GitHub Action
+name: Run Ansible in GitHub Action Sequentially
 
 on:
   workflow_dispatch:
@@ -18,16 +18,24 @@ on:
         type: string
         default: 'quay.io/infinispan/server'
 
-      benchmark_name:
-        description: 'Benchmark name to run'
+      benchmark_plan:
+        description: 'Benchmark plan to run'
         type: string
-        default: 'hotrod-benchmark'
+        default: 'benchmark_definition.json'
+
+      hyperfoil_agent_args:
+        description: 'Arguments to provide the Hyperfoil agent'
+        type: string
+        default: '-Xms128m -Xmx800m -XX:+UseZGC -XX:+ZGenerational'
 
 env:
   ANSIBLE_HOST_KEY_CHECKING: False
 
 jobs:
-  provision:
+  predict_run_ids:
+    runs-on: ubuntu-latest
+
+  sequential:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -45,113 +53,26 @@ jobs:
       - name: Set inventory file name
         run: ls -1 *_inventory.yaml | xargs -L1 -I{} cp {} ${{ inputs.inventory_name }}
 
-      - name: Cache Ansible files
-        id: cache-primes
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ inputs.inventory_name }}
-            benchmark_runner_${{ inputs.region }}.pem
-          key: ansible-information-${{ github.run_id }}
-
-  infinispan-prepare:
-    needs:
-      - provision
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download Ansible files
-        id: cache-primes
-        uses: actions/cache@v4
-        with:
-          key: ansible-information-${{ github.run_id }}
-          restore-keys: ansible-information-${{ github.run_id }}
-          path: |
-            ${{ inputs.inventory_name }}
-            benchmark_runner_${{ inputs.region }}.pem
-          fail-on-cache-miss: true
-
-      - name: Create Infinispan server instances ${{ inputs.infinispan_image }}
-        uses: ./.github/actions/infinispan-create-instances
-        with:
-          inventory: ${{ inputs.inventory_name }}
-          image: ${{ inputs.infinispan_image }}
-
-      - name: Create cache for benchmark
-        uses: ./.github/actions/infinispan-create-cache
-        with:
-          inventory: ${{ inputs.inventory_name }}
-
-  hyperfoil-prepare:
-    needs:
-      - provision
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download Ansible files
-        id: cache-primes
-        uses: actions/cache@v4
-        with:
-          key: ansible-information-${{ github.run_id }}
-          restore-keys: ansible-information-${{ github.run_id }}
-          path: |
-            ${{ inputs.inventory_name }}
-            benchmark_runner_${{ inputs.region }}.pem
-          fail-on-cache-miss: true
-
       - name: Start the Hyperfoil controller
         uses: ./.github/actions/hyperfoil-create-controller
         with:
           inventory: ${{ inputs.inventory_name }}
 
-  benchmark:
-    needs:
-      - infinispan-prepare
-      - hyperfoil-prepare
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download Ansible files
-        id: cache-primes
-        uses: actions/cache@v4
+      - name: Run all benchmarks for image ${{ inputs.infinispan_image }}
+        uses: ./.github/actions/benchmark-complete
         with:
-          key: ansible-information-${{ github.run_id }}
-          restore-keys: ansible-information-${{ github.run_id }}
-          path: |
-            ${{ inputs.inventory_name }}
-            benchmark_runner_${{ inputs.region }}.pem
-          fail-on-cache-miss: true
+          inventory: ${{ inputs.inventory_name }}
+          definition: ${{ inputs.benchmark_plan }}
+          controller_args: ${{ inputs.hyperfoil_agent_args }}
 
-      - name: Running benchmark ${{ inputs.benchmark_name }}
-        run: echo "Started benchmark"
-
-  teardown:
-    needs:
-      - benchmark
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download Ansible files
-        id: cache-primes
-        uses: actions/cache@v4
+      - name: Download all the results
+        uses: ./.github/actions/benchmark-reports
         with:
-          key: ansible-information-${{ github.run_id }}
-          restore-keys: ansible-information-${{ github.run_id }}
-          path: |
-            ${{ inputs.inventory_name }}
-            benchmark_runner_${{ inputs.region }}.pem
-          fail-on-cache-miss: true
+          inventory: ${{ inputs.inventory_name }}
+          definition: ${{ inputs.benchmark_plan }}
 
       - name: Delete EC2 instances
-        if: ${{ always() && steps.provision.conclusion != 'skipped' }}
+        if: ${{ always() && steps.create_aws_ec2_instances.conclusion != 'skipped' }}
         uses: ./.github/actions/ec2-delete-instances
         with:
           region: ${{ inputs.region }}
