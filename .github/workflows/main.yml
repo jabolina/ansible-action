@@ -32,10 +32,7 @@ env:
   ANSIBLE_HOST_KEY_CHECKING: False
 
 jobs:
-  predict_run_ids:
-    runs-on: ubuntu-latest
-
-  sequential:
+  bencmark:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
