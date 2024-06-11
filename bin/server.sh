@@ -11,7 +11,7 @@ OPERATION=$1
 case $OPERATION in
   init|run|create_cache|delete_cache|shutdown)
     if [ -f "env.yml" ]; then ANSIBLE_CUSTOM_VARS_ARG="-e @env.yml"; fi
-    ansible-playbook server.yml -v -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:2}"
+    ansible-playbook ../server.yml -v -e "operation=$OPERATION" $ANSIBLE_CUSTOM_VARS_ARG "${@:2}"
   ;;
   *)
     echo "Invalid option!"
