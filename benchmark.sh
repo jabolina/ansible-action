@@ -17,7 +17,7 @@ case $OPERATION in
     size=$(jq '.benchmarks | length' "$2")
     for ((i=0;i<"$size";i++)); do
       id=$(printf "%04x" "$i")
-      ./hyperfoil.sh stats -e test_runid="$id" "${@:4}"
+      ./hyperfoil.sh stats -e test_runid="$id" -e download_results=true "${@:4}"
     done
 
     mkdir "$3"

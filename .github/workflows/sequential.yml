@@ -3,6 +3,11 @@ name: Run a single benchmark
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch/commit to run the benchmarks.'
+        type: string
+        default: 'main'
+
       region:
         description: 'Name of the region where EC2 instances should be installed'
         type: string
@@ -48,6 +53,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Create AWS EC2 instances
         id: create_aws_ec2_instances
